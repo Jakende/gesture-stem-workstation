@@ -1,0 +1,30 @@
+{
+  "name": "gesture-stem-workstation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/web",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @gsw/web",
+    "build": "npm run build --workspace @gsw/web",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present && npm run test:processor",
+    "test:e2e": "npm run test:e2e --workspace @gsw/web",
+    "test:processor": ".venv/bin/pytest apps/processor/tests",
+    "check:processor": ".venv/bin/ruff check apps/processor && .venv/bin/mypy apps/processor/src",
+    "check:ui": "python3 /Users/jakobendemann/.codex/skills/tech-ui-designsystem/scripts/validate_ui_css.py apps/web/src/styles/index.css",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:processor && npm run check:ui && npm run test:e2e"
+  },
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "typescript-eslint": "^8.56.0"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "@gsw/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "lint": "eslint src tests vite.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@gsw/gesture-domain": "0.1.0",
+    "@gsw/music-domain": "0.1.0",
+    "@gsw/project-schema": "0.1.0",
+    "@gsw/protocol": "0.1.0",
+    "@mediapipe/tasks-vision": "^1.0.1",
+    "three": "^0.185.1",
+    "three.quarks": "^0.17.1",
+    "tone": "^15.1.22",
+    "wavesurfer.js": "^7.12.11"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@types/node": "^24.3.0",
+    "@types/three": "^0.185.4",
+    "eslint": "^10.8.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.1",
+    "vitest": "^4.1.10"
+  }
+}

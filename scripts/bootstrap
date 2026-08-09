@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_dir="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$repo_dir"
+
+npm install
+./scripts/fetch-models
+
+if command -v python3.12 >/dev/null 2>&1; then
+  processor_python="$(command -v python3.12)"
+elif command -v python3.11 >/dev/null 2>&1; then
+  processor_python="$(command -v python3.11)"
+else
+  processor_python="$(command -v python3)"
+fi
+
+"$processor_python" -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+
+with_separation=false
+with_transcription=false
+for option in "$@"; do
+  case "$option" in
+    --with-separation) with_separation=true ;;
+    --with-transcription) with_transcription=true ;;
+    --all) with_separation=true; with_transcription=true ;;
+    *) echo "Unknown bootstrap option: $option" >&2; exit 2 ;;
+  esac
+done
+
+if [[ "$with_separation" == true ]]; then
+  .venv/bin/pip install -e 'apps/processor[dev,separation]'
+else
+  .venv/bin/pip install -e 'apps/processor[dev]'
+fi
+
+if [[ "$with_transcription" == true ]]; then
+  if ! command -v python3.10 >/dev/null 2>&1; then
+    echo "Basic Pitch requires Python 3.10 on Apple Silicon. Install python@3.10 first." >&2
+    exit 1
+  fi
+  "$(command -v python3.10)" -m venv .venv-basic-pitch
+  .venv-basic-pitch/bin/python -m pip install --upgrade pip 'setuptools<81'
+  .venv-basic-pitch/bin/pip install 'basic-pitch==0.4.0'
+fi
+
+echo "Bootstrap complete. Run ./scripts/dev"

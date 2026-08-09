@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_dir="$(cd "$(dirname "$0")/.." && pwd)"
+model_dir="$repo_dir/models"
+model_path="$model_dir/hand_landmarker.task"
+model_url="https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
+
+mkdir -p "$model_dir"
+if [[ -s "$model_path" ]]; then
+  echo "MediaPipe hand model already available."
+  exit 0
+fi
+
+temporary_path="$model_path.download"
+trap 'rm -f "$temporary_path"' EXIT
+curl --fail --location --retry 3 --output "$temporary_path" "$model_url"
+mv "$temporary_path" "$model_path"
+echo "Downloaded MediaPipe hand model to $model_path"
+
