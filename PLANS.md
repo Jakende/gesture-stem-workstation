@@ -713,6 +713,12 @@ other harmonic stems
 
 Do not automatically send drums through transcription.
 
+Implementation status (2026-08-09): Basic Pitch runs through its dedicated Python 3.10
+virtual environment. The processor intentionally preserves the virtualenv interpreter symlink
+so Python loads that environment's own site-packages rather than the Homebrew base
+interpreter. The browser retains actionable per-track failures until the next attempt succeeds
+and uses a distinct neutral state for tracks that have not yet been transcribed.
+
 Workflow:
 
 ```text

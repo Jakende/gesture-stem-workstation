@@ -74,6 +74,11 @@ The default install intentionally keeps heavier ML dependencies optional:
 
 Source separation and transcription run as local jobs. The browser never keeps a long HTTP request open while a model runs.
 
+The processor invokes `.venv-basic-pitch/bin/python` without resolving its interpreter
+symlink. Python therefore discovers that environment's own `pyvenv.cfg` and `site-packages`
+instead of falling back to the Homebrew base interpreter. The track inspector distinguishes
+**Not transcribed yet**, a successful note count, and a persistent track-specific error.
+
 ## A typical first performance
 
 1. Start the app and click **Add example stems** or **Add stems**.

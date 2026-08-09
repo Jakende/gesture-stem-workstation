@@ -27,7 +27,9 @@ class UnavailableAudioTranscriber:
 
 class SubprocessBasicPitchTranscriber:
     def __init__(self, python_executable: Path, runner_script: Path) -> None:
-        self.python_executable = python_executable.resolve()
+        # Do not resolve this symlink: CPython uses the executable location to discover
+        # pyvenv.cfg and the environment's site-packages.
+        self.python_executable = python_executable.absolute()
         self.runner_script = runner_script.resolve()
 
     def transcribe(self, input_path: Path, confidence_threshold: float) -> TranscriptionResult:

@@ -6,6 +6,7 @@ Status date: 2026-08-09
 
 - Phases 0–5: repository, synchronized audio, separation adapter, MediaPipe, mapping, and the core musical interaction are implemented.
 - Phase 6: Basic Pitch adapter, canonical notes, confidence filtering, job API, and MIDI export are implemented. Persistent transcription-result caching and a piano-roll overlay remain follow-up work.
+- The Basic Pitch subprocess preserves `.venv-basic-pitch/bin/python` instead of resolving its symlink to the Homebrew base interpreter, ensuring that only the dedicated environment's packages are loaded. A regression test covers this interpreter boundary. Transcription failures remain visible per track and are no longer overwritten by the neutral not-yet-transcribed state.
 - Phase 7: a synchronized polyphonic Web Audio resynthesis path with oscillator, ADSR, filter, velocity, and continuous source/synth crossfade is implemented. Filter envelope, LFO, and pitch-bend playback remain follow-up work.
 - Phase 8: stereo WebM/Opus mix recording and gesture-automation recording/replay are implemented. WAV encoding remains follow-up work.
 - Phases 9–10: scene capture/recall and variance-based Gesture Learn are implemented.

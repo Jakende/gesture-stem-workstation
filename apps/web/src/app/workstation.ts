@@ -316,6 +316,7 @@ export class Workstation {
   #lastGestureWrite = 0;
   #recording = false;
   #transcriptionAvailable = false;
+  #transcriptionErrors = new Map<string, string>();
   #automationRecording = false;
   #lastAutomationPoint = new Map<string, number>();
   #learnTarget: GestureContinuousParameter | undefined;
@@ -652,7 +653,7 @@ export class Workstation {
                 <div class="divider"></div>
                 <p class="meta">Transcription + resynthesis</p>
                 <div class="gesture-actions"><button id="transcribeButton" class="secondary" type="button" disabled>Transcribe selected track</button><button id="midiExportButton" class="secondary" type="button" disabled>Export MIDI</button></div>
-                <p id="transcriptionStatus" class="meta">No note analysis</p>
+                <p id="transcriptionStatus" class="meta">Not transcribed yet</p>
                 <label class="setting-line"><input id="synthEnabled" type="checkbox" disabled /> <span>Enable synthesizer path</span></label>
                 <label class="control-line"><span>Source ↔ synth</span><input id="synthMixControl" type="range" min="0" max="1" step="0.01" disabled /><output id="synthMixValue" class="control-value">—</output></label>
                 <label class="control-line"><span>Oscillator</span><select id="oscillatorControl" disabled><option value="sine">Sine</option><option value="triangle">Triangle</option><option value="sawtooth">Sawtooth</option><option value="square">Square</option></select><output class="control-value">OSC</output></label>
@@ -1296,6 +1297,7 @@ export class Workstation {
     }
     const button = queryRequired<HTMLButtonElement>("#transcribeButton");
     button.disabled = true;
+    this.#transcriptionErrors.delete(track.id);
     setText("#transcriptionStatus", "Uploading local asset…");
     try {
       const sourceResponse = await fetch(asset.objectUrl);
@@ -1316,11 +1318,13 @@ export class Workstation {
       });
       const updated = this.#store.snapshot.tracks.find((candidate) => candidate.id === track.id);
       if (updated) this.#audio.updateTrack(updated);
+      this.#transcriptionErrors.delete(track.id);
       this.#syncInspector();
       this.#setStatus(`${result.notes.length} notes detected in ${track.name}. Resynthesis is ready.`);
     } catch (error) {
-      this.#setStatus(error instanceof Error ? error.message : "Transcription failed.", true);
-      setText("#transcriptionStatus", "Transcription unavailable");
+      const message = error instanceof Error ? error.message : "Transcription failed.";
+      this.#transcriptionErrors.set(track.id, message);
+      this.#setStatus(message, true);
     } finally {
       this.#syncInspector();
     }
@@ -1376,15 +1380,18 @@ export class Workstation {
     reverseQuickButton.disabled = !track;
     reverseQuickButton.setAttribute("aria-pressed", String(track?.audioState.reverseEnabled ?? false));
     const transcribable = Boolean(track && track.role !== "drums" && this.#transcriptionAvailable);
+    const transcriptionError = track ? this.#transcriptionErrors.get(track.id) : undefined;
     queryRequired<HTMLButtonElement>("#transcribeButton").disabled = !transcribable;
     queryRequired<HTMLButtonElement>("#midiExportButton").disabled = !track?.transcription;
     setText(
       "#transcriptionStatus",
       track?.transcription
         ? `${track.transcription.notes.length} notes / ${track.transcription.source}`
-        : track?.role === "drums"
-          ? "Drums are not transcribed"
-          : "No note analysis"
+        : transcriptionError
+          ? `Error · ${transcriptionError}`
+          : track?.role === "drums"
+            ? "Drums are not transcribed"
+            : "Not transcribed yet"
     );
     const synthReady = Boolean(track?.transcription && track.synth);
     const synthEnabled = queryRequired<HTMLInputElement>("#synthEnabled");
@@ -1859,6 +1866,7 @@ export class Workstation {
     for (const waveform of this.#waveforms.values()) waveform.destroy();
     for (const track of this.#store.snapshot.tracks) this.#audio.removeTrack(track.id);
     this.#waveforms.clear();
+    this.#transcriptionErrors.clear();
   }
 
   #setStatus(message: string, error = false): void {
